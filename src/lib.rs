@@ -56,5 +56,12 @@ impl Config {
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
+
+    match config.command {
+        Command::AddStock => println!("AddStock"),
+        Command::RemoveStock => println!("RemoveStock"), 
+        Command::ListStocks => println!("ListStocks"),
+    }
+
     Ok(())
 }

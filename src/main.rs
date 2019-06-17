@@ -4,7 +4,6 @@ use std::process;
 use stocks::Config;
 
 
-
 fn main() {
     let args: Vec<String> = env::args().collect();
 
