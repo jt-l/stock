@@ -2,6 +2,7 @@ use std::error::Error;
 use std::env;
 use std::process;
 
+mod db;
 
 // valid commands
 pub enum Command {
@@ -44,6 +45,12 @@ impl Config {
         if args.len() < 3 {
             return Err("Not enough arguments");
         }
+
+        // create tables if they do not exist
+        db::create_tables().unwrap_or_else(|err| {
+            eprintln!("Problem creating db tables: {}", err);   
+            process::exit(1);               
+        });
 
         let command = Command::from_str(&args[1]).unwrap_or_else(|err| {
             eprintln!("Problem parsing arguments: {}", err);   
