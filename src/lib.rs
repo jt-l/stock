@@ -8,6 +8,9 @@ pub enum Command {
     AddStock,
     RemoveStock,
     ListStocks,
+    AddProfile,
+    RemoveProfile,
+    ListProfiles
 }
 
 trait FromStr {
@@ -22,6 +25,9 @@ impl FromStr for Command {
             "add_stock" => Ok(Command::AddStock),
             "remove_stock" => Ok(Command::RemoveStock),
             "list_stocks" => Ok(Command::ListStocks),
+            "add_profile" => Ok(Command::AddProfile),
+            "remove_profile" => Ok(Command::RemoveProfile),
+            "list_profiles" => Ok(Command::ListProfiles),
             _ => Err("Invalid command"),
         }
     }
@@ -61,6 +67,9 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         Command::AddStock => println!("AddStock"),
         Command::RemoveStock => println!("RemoveStock"), 
         Command::ListStocks => println!("ListStocks"),
+        Command::AddProfile => println!("AddProfile"),
+        Command::RemoveProfile => println!("RemoveProfile"), 
+        Command::ListProfiles => println!("ListProfiles"),
     }
 
     Ok(())
