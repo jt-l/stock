@@ -2,6 +2,9 @@ extern crate rusqlite;
 
 use rusqlite::{Connection, Result};
 use rusqlite::NO_PARAMS;
+use rusqlite::types::ToSql;
+
+use crate::Config;
 
 // enum of available queries
 pub enum Queries {
@@ -9,17 +12,21 @@ pub enum Queries {
     GetStocks,
     InsertProfile,
     InsertStock,
+    RemoveProfile,
+    RemoveStock,
 }
 
 // Profile
+#[derive(Debug)]
 struct Profile {
     id: i32,
     name: String,
 }
 
 // Stock
+#[derive(Debug)]
 struct Stock {
-    id i32,
+    id: i32,
     profile: String,
     symbol: String
 }
@@ -48,45 +55,56 @@ pub fn create_tables() -> Result<()> {
     Ok(())
 }
 
-pub fn execute(connection: &Connection, query: Queries,) -> impl Future<Item = Vec<WeatherAgg>, Error = AWError> {
-    // duplicate the pool
-    let conn = pool.clone();
+// execute a given query given a db connection
+pub fn execute(config: Config, query: Queries) -> Result<()> {
 
-    // match and execute a query
-    // web::block executes a blocking function on a thread pool, returns a future that resolves to the result of the function execution
-    // pool.get() gets a connection from the connection pool, it will wait at most for the configured connection timeout before returning an error
-    web::block(move || match query {
-        Queries::GetTopTenHottestYears => get_hottest_years(pool.get()?),
-        Queries::GetTopTenColdestYears => get_coldest_years(pool.get()?),
-        Queries::GetTopTenHottestMonths => get_hottest_months(pool.get()?),
-        Queries::GetTopTenColdestMonths => get_coldest_months(pool.get()?),
-    })
-    .from_err()
+    let conn = Connection::open("stocks.db")?;
+
+    match query {
+        Queries::InsertProfile => insert_profile(conn, config.profile),
+        Queries::RemoveProfile => insert_profile(conn, config.profile),
+        Queries::GetProfiles   => get_profiles(conn),
+        Queries::InsertStock   => insert_profile(conn, config.profile),
+        Queries::RemoveStock   => insert_profile(conn, config.profile),
+        Queries::GetStocks     => insert_profile(conn, config.profile),
+     }
+
+
 }
 
-fn get_profiles(conn: Connection) -> Result<Vec<WeatherAgg>, Error> {
-    let stmt = "
-    SELECT cast(strftime('%Y', date) as int) as theyear,
-            sum(tmax) as total
-        FROM nyc_weather
-        WHERE tmax <> 'TMAX'
-        GROUP BY theyear
-        ORDER BY total DESC LIMIT 10;";
+// insert a new profile
+fn insert_profile(conn: Connection, name: String) -> Result<()> {
 
-    let mut prep_stmt = conn.prepare(stmt)?;
-    let annuals = prep_stmt
-        .query_map(NO_PARAMS, |row| WeatherAgg::AnnualAgg {
-            year: row.get(0),
-            total: row.get(1),
-        })
-        .and_then(|mapped_rows| {
-            Ok(mapped_rows
-                .map(|row| row.unwrap())
-                .collect::<Vec<WeatherAgg>>())
-        })?;
+    let profile = Profile {
+        id: 0,
+        name: name,
+    };
 
-    sleep(Duration::from_secs(2));
+    conn.execute(
+        "INSERT INTO PROFILES (name)
+            VALUES (?1)",
+        &[&profile.name as &ToSql],
+    )?;
 
-    Ok(annuals)
+    Ok(())
+}
+
+// get all profiles
+fn get_profiles(conn: Connection) -> Result<()> {
+
+    let mut stmt = conn
+        .prepare("SELECT * from PROFILES;")?;
+
+    let profiles = stmt
+        .query_map(NO_PARAMS, |row| Ok(Profile {
+            id: row.get(0)?,
+            name: row.get(1)?,
+        }))?;
+
+    for profile in profiles {
+        println!("Found profile {:?}", profile.unwrap());
+    }
+
+    Ok(())
 }
 
