@@ -11,9 +11,6 @@ pub enum Command {
     InsertStock {arg: String},
     RemoveStock {arg: String},
     GetStocks,
-    InsertProfile {arg: String},
-    RemoveProfile {arg: String},
-    GetProfiles
 }
 
 trait FromStr {
@@ -30,9 +27,6 @@ impl FromStr for Command {
             "insert_stock" => Ok(Command::InsertStock {arg: arg}),
             "remove_stock" => Ok(Command::RemoveStock {arg: arg}),
             "get_stocks" => Ok(Command::GetStocks),
-            "insert_profile" => Ok(Command::InsertProfile {arg: arg}),
-            "remove_profile" => Ok(Command::RemoveProfile {arg: arg}),
-            "get_profiles" => Ok(Command::GetProfiles),
             _ => Err("Invalid command"),
         }
     }
@@ -40,7 +34,6 @@ impl FromStr for Command {
 
 pub struct Config {
     pub command: Command, 
-    pub profile: String,
     pub alpha_vantage_key: String,
 }
 
@@ -61,17 +54,12 @@ impl Config {
             process::exit(1);
         });
 
-        let profile = env::var("STOCKS_PROFILE_NAME").unwrap_or_else(|err| {
-            eprintln!("STOCKS_PROFILE_NAME is not set: {}", err);   
-            process::exit(1);
-        });
-
         let alpha_vantage_key = env::var("ALPHA_VANTAGE_API_KEY").unwrap_or_else(|err| {
             eprintln!("ALPHA_VANTAGE_API_KEY is not set: {}", err);   
             process::exit(1);
         });
 
-        Ok(Config {command, profile, alpha_vantage_key})
+        Ok(Config {command, alpha_vantage_key})
     }
 }
 
@@ -81,9 +69,6 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         Command::InsertStock{arg: _ }   => { db::execute(config, Queries::InsertStock); },
         Command::RemoveStock{arg: _ }   => { db::execute(config, Queries::RemoveStock); },
         Command::GetStocks              => { db::execute(config, Queries::GetStocks); },
-        Command::InsertProfile{arg: _ } => { db::execute(config, Queries::InsertProfile); },
-        Command::RemoveProfile{arg: _ } => { db::execute(config, Queries::RemoveProfile); },
-        Command::GetProfiles            => { db::execute(config, Queries::GetProfiles); },
     }
 
     Ok(())

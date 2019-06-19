@@ -6,48 +6,30 @@ use rusqlite::types::ToSql;
 
 use crate::Config;
 
+use crate::Command;
+
 // enum of available queries
 pub enum Queries {
-    GetProfiles,
     GetStocks,
-    InsertProfile,
     InsertStock,
-    RemoveProfile,
     RemoveStock,
-}
-
-// Profile
-#[derive(Debug)]
-struct Profile {
-    id: i32,
-    name: String,
 }
 
 // Stock
 #[derive(Debug)]
 struct Stock {
     id: i32,
-    profile: String,
     symbol: String
 }
 
 pub fn create_tables() -> Result<()> {
     let conn = Connection::open("stocks.db")?;
 
-    // Profiles table
-    conn.execute(
-        "create table if not exists profiles (
-             id integer primary key,
-             name text not null unique
-         )",
-        NO_PARAMS,
-    )?;
-
     // stocks table
     conn.execute(
-        "create table if not exists stocks (
+        "create table if not exists STOCKS (
              id integer primary key,
-             name text not null
+             symbol text not null
          )",
         NO_PARAMS,
     )?;
@@ -61,48 +43,57 @@ pub fn execute(config: Config, query: Queries) -> Result<()> {
     let conn = Connection::open("stocks.db")?;
 
     match query {
-        Queries::InsertProfile => insert_profile(conn, config.profile),
-        Queries::RemoveProfile => insert_profile(conn, config.profile),
-        Queries::GetProfiles   => get_profiles(conn),
-        Queries::InsertStock   => insert_profile(conn, config.profile),
-        Queries::RemoveStock   => insert_profile(conn, config.profile),
-        Queries::GetStocks     => insert_profile(conn, config.profile),
+        Queries::InsertStock   => {
+            if let Command::InsertStock{arg} = config.command {
+                insert_stock(conn, arg);
+            }
+        },
+        Queries::RemoveStock   => {
+            if let Command::InsertStock{arg} = config.command {
+                insert_stock(conn, arg);
+            }
+        },
+        Queries::GetStocks     => {
+            if let Command::GetStocks = config.command {
+                get_stocks(conn);
+            }
+        },
      }
 
-
+    Ok(())
 }
 
 // insert a new profile
-fn insert_profile(conn: Connection, name: String) -> Result<()> {
+fn insert_stock(conn: Connection, symbol: String) -> Result<()> {
 
-    let profile = Profile {
+    let stock = Stock {
         id: 0,
-        name: name,
+        symbol: symbol,
     };
 
     conn.execute(
-        "INSERT INTO PROFILES (name)
+        "INSERT INTO STOCKS (symbol)
             VALUES (?1)",
-        &[&profile.name as &ToSql],
+        &[&stock.symbol as &ToSql],
     )?;
 
     Ok(())
 }
 
 // get all profiles
-fn get_profiles(conn: Connection) -> Result<()> {
+fn get_stocks(conn: Connection) -> Result<()> {
 
     let mut stmt = conn
-        .prepare("SELECT * from PROFILES;")?;
+        .prepare("SELECT * from STOCKS;")?;
 
-    let profiles = stmt
-        .query_map(NO_PARAMS, |row| Ok(Profile {
+    let stocks = stmt
+        .query_map(NO_PARAMS, |row| Ok(Stock {
             id: row.get(0)?,
-            name: row.get(1)?,
+            symbol: row.get(1)?,
         }))?;
 
-    for profile in profiles {
-        println!("Found profile {:?}", profile.unwrap());
+    for stock in stocks {
+        println!("Found stock {:?}", stock.unwrap());
     }
 
     Ok(())
