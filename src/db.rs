@@ -49,8 +49,8 @@ pub fn execute(config: Config, query: Queries) -> Result<()> {
             }
         },
         Queries::RemoveStock   => {
-            if let Command::InsertStock{arg} = config.command {
-                insert_stock(conn, arg);
+            if let Command::RemoveStock{arg} = config.command {
+                remove_stock(conn, arg);
             }
         },
         Queries::GetStocks     => {
@@ -75,6 +75,16 @@ fn insert_stock(conn: Connection, symbol: String) -> Result<()> {
         "INSERT INTO STOCKS (symbol)
             VALUES (?1)",
         &[&stock.symbol as &ToSql],
+    )?;
+
+    Ok(())
+}
+
+fn remove_stock(conn: Connection, symbol: String) -> Result<()> {
+
+    conn.execute(
+        "DELETE FROM STOCKS WHERE symbol = (?1)",
+        &[&symbol],
     )?;
 
     Ok(())
