@@ -3,6 +3,7 @@ use std::env;
 use std::process;
 
 mod db;
+mod api;
 
 use db::Queries;
 
@@ -39,6 +40,7 @@ pub struct Config {
 
 impl Config {
     pub fn new(args: &[String]) -> Result<Config, &'static str> {
+
         if args.len() < 3 {
             return Err("Not enough arguments");
         }
@@ -66,9 +68,9 @@ impl Config {
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     match config.command {
-        Command::InsertStock{arg: _ }   => { db::execute(config, Queries::InsertStock); },
-        Command::RemoveStock{arg: _ }   => { db::execute(config, Queries::RemoveStock); },
-        Command::GetStocks              => { db::execute(config, Queries::GetStocks); },
+        Command::InsertStock{arg: _ }   => { db::execute(config, Queries::InsertStock)?; },
+        Command::RemoveStock{arg: _ }   => { db::execute(config, Queries::RemoveStock)?; },
+        Command::GetStocks              => { db::execute(config, Queries::GetStocks)?; },
     }
 
     Ok(())

@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 rusqlite = "0.18.0"
+requests = "0.0.30"

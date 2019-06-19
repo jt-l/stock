@@ -8,6 +8,8 @@ use crate::Config;
 
 use crate::Command;
 
+use crate::api;
+
 // enum of available queries
 pub enum Queries {
     GetStocks,
@@ -19,7 +21,7 @@ pub enum Queries {
 #[derive(Debug)]
 struct Stock {
     id: i32,
-    symbol: String
+    symbol: String,
 }
 
 pub fn create_tables() -> Result<()> {
@@ -45,17 +47,17 @@ pub fn execute(config: Config, query: Queries) -> Result<()> {
     match query {
         Queries::InsertStock   => {
             if let Command::InsertStock{arg} = config.command {
-                insert_stock(conn, arg);
+                insert_stock(conn, arg)?;
             }
         },
         Queries::RemoveStock   => {
             if let Command::RemoveStock{arg} = config.command {
-                remove_stock(conn, arg);
+                remove_stock(conn, arg)?;
             }
         },
         Queries::GetStocks     => {
             if let Command::GetStocks = config.command {
-                get_stocks(conn);
+                get_stocks(conn, config.alpha_vantage_key)?;
             }
         },
      }
@@ -91,7 +93,7 @@ fn remove_stock(conn: Connection, symbol: String) -> Result<()> {
 }
 
 // get all profiles
-fn get_stocks(conn: Connection) -> Result<()> {
+fn get_stocks(conn: Connection, alpha_vantage_key: String) -> Result<()> {
 
     let mut stmt = conn
         .prepare("SELECT * from STOCKS;")?;
@@ -103,7 +105,8 @@ fn get_stocks(conn: Connection) -> Result<()> {
         }))?;
 
     for stock in stocks {
-        println!("Found stock {:?}", stock.unwrap());
+        let symbol = stock.unwrap().symbol;
+        api::get_stock(symbol, &alpha_vantage_key);
     }
 
     Ok(())
