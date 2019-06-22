@@ -2,7 +2,6 @@ extern crate termion;
 
 use termion::{color, style};
 
-//use std:io::{Write};
 use crate::api;
 
 
