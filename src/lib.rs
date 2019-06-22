@@ -4,6 +4,7 @@ use std::process;
 
 mod db;
 mod api;
+mod formatter;
 
 use db::Queries;
 
@@ -15,19 +16,25 @@ pub enum Command {
 }
 
 trait FromStr {
-    fn from_str(command: &str, arg: &str) -> Result<Command, (&'static str)>;
+    fn from_str(args: &[String]) -> Result<Command, (&'static str)>;
 }
 
 // FromStr is used to parse command line arg into enum
 impl FromStr for Command {
 
-    fn from_str(command: &str, arg: &str) -> Result<Command, (&'static str)> {
-        let arg = arg.to_string();
+    fn from_str(args: &[String]) -> Result<Command, (&'static str)> {
+       let command = &args[1];
 
-        match command {
-            "insert_stock" => Ok(Command::InsertStock {arg: arg}),
-            "remove_stock" => Ok(Command::RemoveStock {arg: arg}),
-            "get_stocks" => Ok(Command::GetStocks),
+        match command.as_ref() {
+            "add" => {
+                if args.len() < 3 { return Err("Not enough arguments")};
+                Ok(Command::InsertStock {arg: args[2].clone()})
+            },
+            "rm" => {
+                if args.len() < 3 { return Err("Not enough arguments")};
+                Ok(Command::RemoveStock {arg: args[2].clone()})
+            },
+            "ls" => Ok(Command::GetStocks),
             _ => Err("Invalid command"),
         }
     }
@@ -41,17 +48,13 @@ pub struct Config {
 impl Config {
     pub fn new(args: &[String]) -> Result<Config, &'static str> {
 
-        if args.len() < 3 {
-            return Err("Not enough arguments");
-        }
-
         // create tables if they do not exist
         db::create_tables().unwrap_or_else(|err| {
             eprintln!("Problem creating db tables: {}", err);   
             process::exit(1);               
         });
 
-        let command = Command::from_str(&args[1], &args[2]).unwrap_or_else(|err| {
+        let command = Command::from_str(args).unwrap_or_else(|err| {
             eprintln!("Problem parsing arguments: {}", err);   
             process::exit(1);
         });

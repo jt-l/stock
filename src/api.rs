@@ -2,8 +2,15 @@ extern crate requests;
 
 use requests::ToJson;
 
-pub fn get_stock(symbol: String, alpha_vantage_key: &String) {
+#[derive(Debug)]
+pub struct Response {
+    pub symbol: String,
+    pub change_percent: String,
+    pub price: String,
+}
 
+pub fn get_stock(symbol: String, alpha_vantage_key: &String) -> Response {
+    
     // build string
     let mut url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE".to_string();
     let mut symb = "&symbol=".to_string();
@@ -20,7 +27,14 @@ pub fn get_stock(symbol: String, alpha_vantage_key: &String) {
     assert_eq!(response.reason(), "OK");
     assert_eq!(response.status_code(), requests::StatusCode::Ok);
 
-    // print response
+    // parse response
     let data = response.json().unwrap();
-    println!("{}", data);
+
+    let r = Response {
+        symbol: data["Global Quote"]["01. symbol"].to_string(), 
+        change_percent: data["Global Quote"]["10. change percent"].to_string(),
+        price: data["Global Quote"]["05. price"].to_string(),
+    }; 
+
+    r
 }
