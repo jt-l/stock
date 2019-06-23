@@ -45,7 +45,7 @@ impl FromStr for Command {
 #[derive(Clone)]
 pub struct Config {
     pub command: Command, 
-    pub alpha_vantage_key: String,
+    pub api_key: String,
 }
 
 impl Config {
@@ -56,12 +56,12 @@ impl Config {
             process::exit(1);
         });
 
-        let alpha_vantage_key = env::var("WORLD_TRADING_DATA_API_KEY").unwrap_or_else(|err| {
+        let api_key = env::var("WORLD_TRADING_DATA_API_KEY").unwrap_or_else(|err| {
             eprintln!("WORLD_TRADING_DATA_API_KEY is not set: {}", err);   
             process::exit(1);
         });
 
-        Ok(Config {command, alpha_vantage_key})
+        Ok(Config {command, api_key})
     }
 }
 

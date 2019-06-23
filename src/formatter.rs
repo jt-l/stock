@@ -35,5 +35,7 @@ pub fn print(responses: Vec<api::Response>) {
 
         // reset styling
         print!("{}", style::Reset);
+
+       println!("----------------------------------");
     }
 }

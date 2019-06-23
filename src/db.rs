@@ -62,7 +62,7 @@ pub fn execute(config: Config, query: Queries) -> Result<()> {
                         },
                         Queries::GetStocks     => {
                             if let Command::GetStocks = config.command {
-                                formatter::print(get_stocks(conn, config.alpha_vantage_key)?);
+                                formatter::print(get_stocks(conn, config.api_key)?);
                             }
                         },
                         Queries::CreateTables => {
@@ -119,7 +119,7 @@ fn remove_stock<'a>(conn: Connection, symbol: &'a String) -> Result<()> {
     Ok(())
 }
 
-fn get_stocks(conn: Connection, alpha_vantage_key: String) -> Result<std::vec::Vec<api::Response>> {
+fn get_stocks(conn: Connection, api_key: String) -> Result<std::vec::Vec<api::Response>> {
 
     let mut stmt = conn
         .prepare("SELECT * from STOCKS;")?;
@@ -134,7 +134,7 @@ fn get_stocks(conn: Connection, alpha_vantage_key: String) -> Result<std::vec::V
 
     for stock in stocks {
         let symbol = stock.unwrap().symbol;
-        responses.push(api::get_stock(symbol, &alpha_vantage_key));
+        responses.push(api::get_stock(symbol, &api_key));
     }
 
     Ok(responses)
