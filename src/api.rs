@@ -9,15 +9,15 @@ pub struct Response {
     pub price: String,
 }
 
-pub fn get_stock(symbol: String, alpha_vantage_key: &String) -> Response {
+pub fn get_stock(symbol: String, api_key: &String) -> Response {
     
     // build string
-    let mut url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE".to_string();
-    let mut symb = "&symbol=".to_string();
-    let mut key = "&apikey=".to_string();
+    let mut url = "https://api.worldtradingdata.com/api/v1/stock?".to_string();
+    let mut symb = "symbol=".to_string();
+    let mut key = "&api_token=".to_string();
 
     symb.push_str(&symbol);
-    key.push_str(alpha_vantage_key);
+    key.push_str(api_key);
 
     url.push_str(&symb);
     url.push_str(&key);
@@ -31,9 +31,9 @@ pub fn get_stock(symbol: String, alpha_vantage_key: &String) -> Response {
     let data = response.json().unwrap();
 
     let r = Response {
-        symbol: data["Global Quote"]["01. symbol"].to_string(), 
-        change_percent: data["Global Quote"]["10. change percent"].to_string(),
-        price: data["Global Quote"]["05. price"].to_string(),
+        symbol: data["data"][0]["symbol"].to_string(), 
+        change_percent: data["data"][0]["change_pct"].to_string(),
+        price: data["data"][0]["price"].to_string(),
     }; 
 
     r

@@ -59,8 +59,8 @@ impl Config {
             process::exit(1);
         });
 
-        let alpha_vantage_key = env::var("ALPHA_VANTAGE_API_KEY").unwrap_or_else(|err| {
-            eprintln!("ALPHA_VANTAGE_API_KEY is not set: {}", err);   
+        let alpha_vantage_key = env::var("WORLD_TRADING_DATA_API_KEY").unwrap_or_else(|err| {
+            eprintln!("WORLD_TRADING_DATA_API_KEY is not set: {}", err);   
             process::exit(1);
         });
 
