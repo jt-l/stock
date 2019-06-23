@@ -1,5 +1,7 @@
 extern crate rusqlite;
 
+use std::env;
+
 use rusqlite::{Connection, Result};
 use rusqlite::NO_PARAMS;
 use rusqlite::types::ToSql;
@@ -17,6 +19,7 @@ pub enum Queries {
     GetStocks,
     InsertStock,
     RemoveStock,
+    CreateTables,
 }
 
 // Stock
@@ -26,8 +29,61 @@ struct Stock {
     symbol: String,
 }
 
-pub fn create_tables() -> Result<()> {
-    let conn = Connection::open("stocks.db")?;
+// execute a given query given a db connection
+pub fn execute(config: Config, query: Queries) -> Result<()> {
+
+    match env::current_exe() {
+        Ok(exe_path) =>
+        { 
+            // convert path to a str
+            match exe_path.to_str() {
+                Some(path) => {
+
+                    // build path to db
+                    let db_extension = ".db";
+                    let mut db_path = path.to_string();
+                    db_path.push_str(db_extension);
+
+                    // open db connection
+                    let conn = Connection::open(db_path)?;
+
+                    match query {
+                        Queries::InsertStock   => {
+                            if let Command::InsertStock{arg} = config.command {
+                                insert_stock(conn, &arg)?;
+                                println!("{} successfully added", &arg);
+                            }
+                        },
+                        Queries::RemoveStock   => {
+                            if let Command::RemoveStock{arg} = config.command {
+                                remove_stock(conn, &arg)?;
+                                println!("{} successfully removed", &arg);
+                            }
+                        },
+                        Queries::GetStocks     => {
+                            if let Command::GetStocks = config.command {
+                                formatter::print(get_stocks(conn, config.alpha_vantage_key)?);
+                            }
+                        },
+                        Queries::CreateTables => {
+                            create_tables(conn)?;
+                            }
+                        }
+
+                    Ok(())
+
+                }, 
+
+                // panic if exe_path fails to convert to str
+                None => panic!(),
+            }
+        },
+            // panic if env::current_exe() fails
+            _ => {panic!()},
+    }
+}
+
+pub fn create_tables(conn: Connection) -> Result<()> {
 
     // stocks table
     conn.execute(
@@ -39,34 +95,7 @@ pub fn create_tables() -> Result<()> {
     )?;
 
     Ok(())
-}
 
-// execute a given query given a db connection
-pub fn execute(config: Config, query: Queries) -> Result<()> {
-
-    let conn = Connection::open("stocks.db")?;
-
-    match query {
-        Queries::InsertStock   => {
-            if let Command::InsertStock{arg} = config.command {
-                insert_stock(conn, &arg)?;
-                println!("{} successfully added", &arg);
-            }
-        },
-        Queries::RemoveStock   => {
-            if let Command::RemoveStock{arg} = config.command {
-                remove_stock(conn, &arg)?;
-                println!("{} successfully removed", &arg);
-            }
-        },
-        Queries::GetStocks     => {
-            if let Command::GetStocks = config.command {
-                formatter::print(get_stocks(conn, config.alpha_vantage_key)?);
-            }
-        },
-     }
-
-    Ok(())
 }
 
 fn insert_stock<'a>(conn: Connection, symbol: &'a String) -> Result<()> {

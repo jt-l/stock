@@ -7,6 +7,7 @@ use crate::api;
 
 pub fn print(responses: Vec<api::Response>) {
 
+    println!("----------------------------------");
     println!("SYMBOL    PRICE     PERCENT_CHANGE");
     println!("----------------------------------");
     

@@ -8,7 +8,9 @@ mod formatter;
 
 use db::Queries;
 
+
 // valid commands
+#[derive(Clone)]
 pub enum Command {
     InsertStock {arg: String},
     RemoveStock {arg: String},
@@ -40,6 +42,7 @@ impl FromStr for Command {
     }
 }
 
+#[derive(Clone)]
 pub struct Config {
     pub command: Command, 
     pub alpha_vantage_key: String,
@@ -47,12 +50,6 @@ pub struct Config {
 
 impl Config {
     pub fn new(args: &[String]) -> Result<Config, &'static str> {
-
-        // create tables if they do not exist
-        db::create_tables().unwrap_or_else(|err| {
-            eprintln!("Problem creating db tables: {}", err);   
-            process::exit(1);               
-        });
 
         let command = Command::from_str(args).unwrap_or_else(|err| {
             eprintln!("Problem parsing arguments: {}", err);   
@@ -70,6 +67,10 @@ impl Config {
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
+    // create tables if they do not exist
+    db::execute(config.clone(), Queries::CreateTables)?;
+
+    // execute command
     match config.command {
         Command::InsertStock{arg: _ }   => { db::execute(config, Queries::InsertStock)?; },
         Command::RemoveStock{arg: _ }   => { db::execute(config, Queries::RemoveStock)?; },
