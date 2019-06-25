@@ -4,15 +4,12 @@ use termion::{color, style};
 
 use crate::api;
 
-
 pub fn print(responses: Vec<api::Response>) {
-
     println!("----------------------------------");
     println!("SYMBOL    PRICE     PERCENT_CHANGE");
     println!("----------------------------------");
-    
-    for response in responses {
 
+    for response in responses {
         // check if stock is negative
         let is_neg = response.change_percent.chars().next();
 
@@ -21,7 +18,6 @@ pub fn print(responses: Vec<api::Response>) {
             // set color red
             print!("{}", color::Fg(color::Red));
         }
-
         // stock is up
         else {
             print!("{}", color::Fg(color::Green));
@@ -30,12 +26,10 @@ pub fn print(responses: Vec<api::Response>) {
         // print output
         print!("{:10}", &response.symbol);
         print!("{:10}", &response.price);
-        println!("({})", &response.change_percent);       
-
+        println!("({})", &response.change_percent);
 
         // reset styling
         print!("{}", style::Reset);
-
     }
 
     println!("----------------------------------");

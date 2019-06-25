@@ -2,9 +2,9 @@ extern crate rusqlite;
 
 use std::env;
 
-use rusqlite::{Connection, Result};
-use rusqlite::NO_PARAMS;
 use rusqlite::types::ToSql;
+use rusqlite::NO_PARAMS;
+use rusqlite::{Connection, Result};
 
 use crate::Config;
 
@@ -31,14 +31,11 @@ struct Stock {
 
 // execute a given query given a db connection
 pub fn execute(config: Config, query: Queries) -> Result<()> {
-
     match env::current_exe() {
-        Ok(exe_path) =>
-        { 
+        Ok(exe_path) => {
             // convert path to a str
             match exe_path.to_str() {
                 Some(path) => {
-
                     // build path to db
                     let db_extension = ".db";
                     let mut db_path = path.to_string();
@@ -48,43 +45,41 @@ pub fn execute(config: Config, query: Queries) -> Result<()> {
                     let conn = Connection::open(db_path)?;
 
                     match query {
-                        Queries::InsertStock   => {
-                            if let Command::InsertStock{arg} = config.command {
+                        Queries::InsertStock => {
+                            if let Command::InsertStock { arg } = config.command {
                                 insert_stock(conn, &arg)?;
                                 println!("{} successfully added", &arg);
                             }
-                        },
-                        Queries::RemoveStock   => {
-                            if let Command::RemoveStock{arg} = config.command {
+                        }
+                        Queries::RemoveStock => {
+                            if let Command::RemoveStock { arg } = config.command {
                                 remove_stock(conn, &arg)?;
                                 println!("{} successfully removed", &arg);
                             }
-                        },
-                        Queries::GetStocks     => {
+                        }
+                        Queries::GetStocks => {
                             if let Command::GetStocks = config.command {
                                 formatter::print(get_stocks(conn, config.api_key)?);
                             }
-                        },
+                        }
                         Queries::CreateTables => {
                             create_tables(conn)?;
-                            }
                         }
+                    }
 
                     Ok(())
-
-                }, 
+                }
 
                 // panic if exe_path fails to convert to str
                 None => panic!(),
             }
-        },
-            // panic if env::current_exe() fails
-            _ => {panic!()},
+        }
+        // panic if env::current_exe() fails
+        _ => panic!(),
     }
 }
 
 pub fn create_tables(conn: Connection) -> Result<()> {
-
     // stocks table
     conn.execute(
         "create table if not exists STOCKS (
@@ -95,11 +90,9 @@ pub fn create_tables(conn: Connection) -> Result<()> {
     )?;
 
     Ok(())
-
 }
 
 fn insert_stock<'a>(conn: Connection, symbol: &'a String) -> Result<()> {
-
     conn.execute(
         "INSERT INTO STOCKS (symbol)
             VALUES (?1)",
@@ -110,25 +103,20 @@ fn insert_stock<'a>(conn: Connection, symbol: &'a String) -> Result<()> {
 }
 
 fn remove_stock<'a>(conn: Connection, symbol: &'a String) -> Result<()> {
-
-    conn.execute(
-        "DELETE FROM STOCKS WHERE symbol = (?1)",
-        &[&symbol],
-    )?;
+    conn.execute("DELETE FROM STOCKS WHERE symbol = (?1)", &[&symbol])?;
 
     Ok(())
 }
 
 fn get_stocks(conn: Connection, api_key: String) -> Result<std::vec::Vec<api::Response>> {
+    let mut stmt = conn.prepare("SELECT * from STOCKS;")?;
 
-    let mut stmt = conn
-        .prepare("SELECT * from STOCKS;")?;
-
-    let stocks = stmt
-        .query_map(NO_PARAMS, |row| Ok(Stock {
+    let stocks = stmt.query_map(NO_PARAMS, |row| {
+        Ok(Stock {
             id: row.get(0)?,
             symbol: row.get(1)?,
-        }))?;
+        })
+    })?;
 
     let mut responses = vec![];
 
@@ -139,4 +127,3 @@ fn get_stocks(conn: Connection, api_key: String) -> Result<std::vec::Vec<api::Re
 
     Ok(responses)
 }
-
