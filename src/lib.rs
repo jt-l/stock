@@ -27,25 +27,15 @@ trait FromStr {
 // FromStr is used to parse command line arg into enum
 impl FromStr for Command {
     fn from_str(args: &[String]) -> Result<Command, (&'static str)> {
-        let command = &args[1];
+        let command = &args[0];
 
         match command.as_ref() {
-            "add" => {
-                if args.len() < 3 {
-                    return Err("Not enough arguments");
-                };
-                Ok(Command::InsertStock {
-                    arg: args[2].clone(),
-                })
-            }
-            "rm" => {
-                if args.len() < 3 {
-                    return Err("Not enough arguments");
-                };
-                Ok(Command::RemoveStock {
-                    arg: args[2].clone(),
-                })
-            }
+            "add" => Ok(Command::InsertStock {
+                arg: args[1].clone(),
+            }),
+            "rm" => Ok(Command::RemoveStock {
+                arg: args[1].clone(),
+            }),
             "ls" => Ok(Command::GetStocks),
             _ => Err("Invalid command"),
         }
@@ -59,7 +49,8 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
+    pub fn new() -> Result<Config, &'static str> {
+        let mut args: Vec<String> = Vec::new();
 
         let matches = App::new("stocks")
             .version("0.0.1")
@@ -67,45 +58,43 @@ impl Config {
             .about("A CLI application to veiw information about stocks")
             .subcommand(
                 SubCommand::with_name("add")
-                    .about("add a stock to the db")
+                    .about("Add a stock to the db")
                     .arg(
                         Arg::with_name("symbol")
                             .index(1)
                             .required(true)
-                            .help("the symbol that you want to add"),
-                    )
-                    .arg(
-                        Arg::with_name("num_stocks")
-                            .short("num")
-                            .takes_value(true)
-                            .requires("symbol")
-                            .help("flag to pass the number of stocks for a given symbol")
-                            .long("num_stocks")
-
-                        ),
+                            .help("The symbol that you want to add"),
+                    ),
             )
+            .subcommand(
+                SubCommand::with_name("rm")
+                    .about("Remove a stock from the db")
+                    .arg(
+                        Arg::with_name("symbol")
+                            .index(1)
+                            .required(true)
+                            .help("The symbol that you want to remove"),
+                    ),
+            )
+            .subcommand(SubCommand::with_name("ls").about("List the info for stocks in the db"))
             .get_matches();
 
-        if let Some(c) = matches.value_of("config") {
-            println!("Value for config: {}", c);
-        }
-
-        // You can check for the existence of subcommands, and if found use their
-        // matches just as you would the top level app
+        // match the command
         if let Some(matches) = matches.subcommand_matches("add") {
-
             if let Some(val) = matches.value_of("symbol") {
-                println!("{}", val);
-
-                if let Some(num) = matches.value_of("num_stocks") {
-                    println!("{}", num);
-                } 
+                args.push("add".to_string());
+                args.push(val.to_string());
             }
-
-
+        } else if let Some(matches) = matches.subcommand_matches("rm") {
+            if let Some(val) = matches.value_of("symbol") {
+                args.push("rm".to_string());
+                args.push(val.to_string());
+            }
+        } else if matches.is_present("ls") {
+            args.push("ls".to_string());
         }
 
-        let command = Command::from_str(args).unwrap_or_else(|err| {
+        let command = Command::from_str(&args).unwrap_or_else(|err| {
             eprintln!("Problem parsing arguments: {}", err);
             process::exit(1);
         });
