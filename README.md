@@ -1,7 +1,10 @@
 STOCKS
 =
 
+
 Retrieve stock data from the command line
+
+
 
 ## INSTALL
 
@@ -43,3 +46,7 @@ SUBCOMMANDS:
     rm      Remove a stock from the db
     help    Prints this message or the help of the given subcommand(s)
 ```
+
+## EXAMPLE
+
+![example](example.png?raw=true "example")
