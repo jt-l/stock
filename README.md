@@ -1,7 +1,7 @@
 Stocks
 =
 
-stock data from the command line
+Retrieve stock data from the command line
 
 ## install
 
