@@ -83,12 +83,12 @@ impl Config {
         if let Some(matches) = matches.subcommand_matches("add") {
             if let Some(val) = matches.value_of("symbol") {
                 args.push("add".to_string());
-                args.push(val.to_string());
+                args.push(val.to_string().to_lowercase());
             }
         } else if let Some(matches) = matches.subcommand_matches("rm") {
             if let Some(val) = matches.value_of("symbol") {
                 args.push("rm".to_string());
-                args.push(val.to_string());
+                args.push(val.to_string().to_lowercase());
             }
         } else if matches.is_present("ls") {
             args.push("ls".to_string());
