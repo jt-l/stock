@@ -53,9 +53,9 @@ impl Config {
         let mut args: Vec<String> = Vec::new();
 
         let matches = App::new("stocks")
-            .version("0.0.1")
-            .author("James Leahy. <jamesleahy314@gmail.com>")
-            .about("A CLI application to veiw information about stocks")
+            .version(env!("CARGO_PKG_VERSION"))
+            .author(env!("CARGO_PKG_AUTHORS"))
+            .about(env!("CARGO_PKG_DESCRIPTION"))
             .subcommand(
                 SubCommand::with_name("add")
                     .about("Add a stock to the db")
@@ -114,10 +114,10 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     // execute command
     match config.command {
-        Command::InsertStock { arg: _ } => {
+        Command::InsertStock { .. } => {
             db::execute(config, Queries::InsertStock)?;
         }
-        Command::RemoveStock { arg: _ } => {
+        Command::RemoveStock { .. } => {
             db::execute(config, Queries::RemoveStock)?;
         }
         Command::GetStocks => {

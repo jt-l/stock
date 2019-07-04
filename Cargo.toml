@@ -3,6 +3,7 @@ name = "stocks"
 version = "0.1.0"
 authors = ["James <jamesleahy314@gmail.com>"]
 edition = "2018"
+description = "a cli tool to view stock data"
 
 [dependencies]
 rusqlite = "0.18.0"

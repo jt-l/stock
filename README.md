@@ -24,6 +24,12 @@ cargo run
 cargo build --release
 ```
 
+## DOCS
+
+```
+cargo doc
+```
+
 ## CONFIGURATION
 
 stocks was built to work with a stock data provider called worldtradingdata, to get an API key go to https://www.worldtradingdata.com/register. 

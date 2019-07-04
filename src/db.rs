@@ -102,7 +102,7 @@ fn insert_stock<'a>(conn: Connection, symbol: &'a String) -> Result<()> {
     Ok(())
 }
 
-fn remove_stock<'a>(conn: Connection, symbol: &'a String) -> Result<()> {
+fn remove_stock<'a>(conn: Connection, symbol: &str) -> Result<()> {
     conn.execute("DELETE FROM STOCKS WHERE symbol = (?1)", &[&symbol])?;
 
     Ok(())
